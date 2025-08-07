@@ -1,2 +1,6 @@
-"FRONTEND/node_modules/" 
-"FRONTEND/node_modules/" 
+node_modules/
+.next/
+FRONTEND/node_modules/
+BACKEND/node_modules/
+*.node
+BACKEND/uploads/*.apk
