@@ -15,7 +15,6 @@ interface GameCardProps {
   showStatus?: boolean;
 }
 
-const IMAGE_FILE_BASE_URL = "http://localhost:8080/uploads/";
 
 export function GameCard({ game, showStatus = false }: GameCardProps) {
   const getStatusClasses = (status: Game["status"]) => {
@@ -31,9 +30,8 @@ export function GameCard({ game, showStatus = false }: GameCardProps) {
     }
   };
 
-  const imageUrl = game.previewImageUrl
-    ? `${IMAGE_FILE_BASE_URL}${game.previewImageUrl}`
-    : "/stylized-game-scene.png";
+  // UPDATED: Use the full URL directly, with a fallback.
+  const imageUrl = game.previewImageUrl || "/stylized-game-scene.png";
 
   return (
     <motion.div

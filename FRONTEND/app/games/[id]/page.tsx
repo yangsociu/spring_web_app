@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Gamepad, HardDrive, Info } from 'lucide-react';
 import { motion } from "framer-motion";
 
-const IMAGE_FILE_BASE_URL = "http://localhost:8080/uploads/";
 
 export default function GameDetailPage() {
   const params = useParams();
@@ -67,9 +66,8 @@ export default function GameDetailPage() {
     );
   }
 
-  const imageUrl = game.previewImageUrl
-    ? `${IMAGE_FILE_BASE_URL}${game.previewImageUrl}`
-    : "/stylized-game-scene.png";
+  // UPDATED: Use the full URL directly, with a fallback.
+  const imageUrl = game.previewImageUrl || "/stylized-game-scene.png";
 
   return (
     <motion.div
