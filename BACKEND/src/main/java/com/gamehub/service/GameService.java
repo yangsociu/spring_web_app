@@ -33,14 +33,13 @@ public class GameService {
 
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
-    private final String UPLOAD_DIR;
+    private final CloudinaryService cloudinaryService; // Injected CloudinaryService
 
     @Autowired
-    public GameService(GameRepository gameRepository, UserRepository userRepository,
-                       @Value("${file.upload-dir}") String uploadDir) {
+    public GameService(GameRepository gameRepository, UserRepository userRepository, CloudinaryService cloudinaryService) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
-        this.UPLOAD_DIR = uploadDir.endsWith("/") ? uploadDir : uploadDir + "/";
+        this.cloudinaryService = cloudinaryService;
     }
 
     public GameResponse createGame(GameRequest gameRequest, String userEmail) throws GameException {
@@ -62,14 +61,15 @@ public class GameService {
             throw new GameException("Your account is not approved yet");
         }
 
-        String previewImageUrl = saveFile(gameRequest.getPreviewImage(), "preview");
+        // Upload preview image to Cloudinary and get the URL
+        String previewImageUrl = cloudinaryService.uploadFile(gameRequest.getPreviewImage());
         String apkFileUrl = gameRequest.getApkFileUrl();
 
         Game game = new Game(
                 gameRequest.getName(),
                 gameRequest.getDescription(),
                 gameRequest.getRequirements(),
-                previewImageUrl,
+                previewImageUrl, // Use the URL from Cloudinary
                 apkFileUrl,
                 gameRequest.isSupportLeaderboard(),
                 gameRequest.isSupportPoints(),
@@ -79,7 +79,7 @@ public class GameService {
 
         try {
             gameRepository.save(game);
-            logger.info("Game created successfully: ID={}, Name={}", game.getId(), game.getName());
+            logger.info("Game created successfully: ID={}, Name={}, Preview URL: {}", game.getId(), game.getName(), previewImageUrl);
         } catch (Exception e) {
             logger.error("Error saving game: {}", game.getName(), e);
             throw new GameException("Error saving game");
@@ -181,30 +181,6 @@ public class GameService {
                 game.getDeveloper().getId(),
                 generateApiKeyMessage(game)
         );
-    }
-
-    private String saveFile(MultipartFile file, String prefix) throws GameException {
-        if (file == null || file.isEmpty()) {
-            logger.warn("File upload failed - no file provided for: {}", prefix);
-            throw new GameException("File is required");
-        }
-
-        try {
-            File uploadDir = new File(UPLOAD_DIR);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-                logger.info("Created upload directory: {}", UPLOAD_DIR);
-            }
-
-            String fileName = prefix + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File dest = new File(UPLOAD_DIR + fileName);
-            file.transferTo(dest);
-            logger.info("File uploaded successfully: {}", fileName);
-            return fileName;
-        } catch (IOException e) {
-            logger.error("Error uploading file: {}", file.getOriginalFilename(), e);
-            throw new GameException("Error uploading file", e);
-        }
     }
 
     private String generateApiKeyMessage(Game game) {
