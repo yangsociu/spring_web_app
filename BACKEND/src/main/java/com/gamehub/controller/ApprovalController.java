@@ -26,7 +26,7 @@ public class ApprovalController {
     private ApprovalService approvalService;
 
     @Autowired
-    private UserRepository userRepository; // Thêm UserRepository để truy vấn danh sách người dùng
+    private UserRepository userRepository;
 
     @PostMapping("/approve")
     public ResponseEntity<String> approveUser(@Valid @RequestBody ApprovalRequest approvalRequest) {
@@ -51,6 +51,19 @@ public class ApprovalController {
             return ResponseEntity.ok(pendingUsers);
         } catch (Exception e) {
             logger.error("Unexpected error while fetching pending users", e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    // New endpoint to get all users for the admin view
+    @GetMapping("/users/all")
+    public ResponseEntity<List<User>> getAllUsers() {
+        logger.info("Fetching list of all users for admin");
+        try {
+            List<User> allUsers = userRepository.findAll();
+            return ResponseEntity.ok(allUsers);
+        } catch (Exception e) {
+            logger.error("Unexpected error while fetching all users", e);
             return ResponseEntity.status(500).body(null);
         }
     }

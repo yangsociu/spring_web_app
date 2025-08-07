@@ -1,6 +1,7 @@
 // Note: Entity đại diện cho bảng users trong MySQL, lưu thông tin người dùng.
 package com.gamehub.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gamehub.model.enums.UserRole;
 import com.gamehub.model.enums.UserStatus;
 import jakarta.persistence.*;
@@ -24,6 +25,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore // Add this annotation to prevent password hash from ever being serialized
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     @Column(nullable = false)
@@ -65,6 +67,7 @@ public class User {
         this.status = status;
     }
 
+    // Getters and Setters remain the same...
     public Long getId() {
         return id;
     }
@@ -105,7 +108,6 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    //information đăng kí
     public String getFullName() {
         return fullName;
     }

@@ -32,7 +32,7 @@ public class GameController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/my-games  ")
+    @GetMapping("/my-games")
     public ResponseEntity<List<GameResponse>> getMyGames(Authentication authentication) throws GameException {
         logger.info("Fetching games for user: {}", authentication.getName());
         List<GameResponse> games = gameService.getGamesByDeveloper(authentication.getName());
@@ -44,5 +44,13 @@ public class GameController {
         logger.info("Fetching public approved games");
         List<GameResponse> games = gameService.getPublicGames();
         return ResponseEntity.ok(games);
+    }
+
+    // New public endpoint to get a single game by its ID
+    @GetMapping("/{id}")
+    public ResponseEntity<GameResponse> getGameById(@PathVariable Long id) {
+        logger.info("Fetching game by ID: {}", id);
+        GameResponse game = gameService.getGameById(id);
+        return ResponseEntity.ok(game);
     }
 }

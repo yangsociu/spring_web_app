@@ -3,6 +3,7 @@ package com.gamehub.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.web.multipart.MultipartFile;
 
 public class GameRequest {
@@ -19,7 +20,9 @@ public class GameRequest {
 
     private MultipartFile previewImage;
 
-    private MultipartFile apkFile;
+    @NotBlank(message = "Link tải game là bắt buộc")
+    @URL(message = "Link tải game không hợp lệ")
+    private String apkFileUrl; // Changed from MultipartFile to String
 
     private boolean supportLeaderboard;
 
@@ -28,17 +31,17 @@ public class GameRequest {
     public GameRequest() {}
 
     public GameRequest(String name, String description, String requirements, MultipartFile previewImage,
-                       MultipartFile apkFile, boolean supportLeaderboard, boolean supportPoints) {
+                       String apkFileUrl, boolean supportLeaderboard, boolean supportPoints) {
         this.name = name;
         this.description = description;
         this.requirements = requirements;
         this.previewImage = previewImage;
-        this.apkFile = apkFile;
+        this.apkFileUrl = apkFileUrl;
         this.supportLeaderboard = supportLeaderboard;
         this.supportPoints = supportPoints;
     }
 
-    // Getters và Setters
+    // Getters and Setters
     public String getName() {
         return name;
     }
@@ -71,12 +74,13 @@ public class GameRequest {
         this.previewImage = previewImage;
     }
 
-    public MultipartFile getApkFile() {
-        return apkFile;
+    // Corrected Getter and Setter for apkFileUrl
+    public String getApkFileUrl() {
+        return apkFileUrl;
     }
 
-    public void setApkFile(MultipartFile apkFile) {
-        this.apkFile = apkFile;
+    public void setApkFileUrl(String apkFileUrl) {
+        this.apkFileUrl = apkFileUrl;
     }
 
     public boolean isSupportLeaderboard() {
