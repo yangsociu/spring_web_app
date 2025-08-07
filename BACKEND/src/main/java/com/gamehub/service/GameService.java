@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +31,10 @@ public class GameService {
 
     private static final Logger logger = LoggerFactory.getLogger(GameService.class);
 
+    private final GameRepository gameRepository;
+    private final UserRepository userRepository;
+    private final String UPLOAD_DIR;
+
     @Autowired
     public GameService(GameRepository gameRepository, UserRepository userRepository,
                        @Value("${file.upload-dir}") String uploadDir) {
@@ -37,15 +42,6 @@ public class GameService {
         this.userRepository = userRepository;
         this.UPLOAD_DIR = uploadDir.endsWith("/") ? uploadDir : uploadDir + "/";
     }
-
-    @Autowired
-    private GameRepository gameRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    // Giả lập lưu trữ file, thay bằng dịch vụ lưu trữ thực tế (S3, local storage, v.v.)
-    private final String UPLOAD_DIR;
 
     public GameResponse createGame(GameRequest gameRequest, String userEmail) throws GameException {
         logger.info("Game creation attempt by user: {}", userEmail);
@@ -66,9 +62,8 @@ public class GameService {
             throw new GameException("Your account is not approved yet");
         }
 
-        // Lưu file ảnh và APK
         String previewImageUrl = saveFile(gameRequest.getPreviewImage(), "preview");
-        String apkFileUrl = saveFile(gameRequest.getApkFile(), "apk");
+        String apkFileUrl = gameRequest.getApkFileUrl();
 
         Game game = new Game(
                 gameRequest.getName(),
@@ -90,7 +85,6 @@ public class GameService {
             throw new GameException("Error saving game");
         }
 
-        // Tạo thông báo API Key
         String apiKeyMessage = generateApiKeyMessage(game);
 
         return new GameResponse(
@@ -123,19 +117,27 @@ public class GameService {
         }
 
         List<Game> games = gameRepository.findByDeveloperId(developer.getId());
-        return games.stream().map(game -> new GameResponse(
-                game.getId(),
-                game.getName(),
-                game.getDescription(),
-                game.getRequirements(),
-                game.getPreviewImageUrl(),
-                game.getApkFileUrl(),
-                game.isSupportLeaderboard(),
-                game.isSupportPoints(),
-                game.getStatus(),
-                game.getDeveloper().getId(),
-                generateApiKeyMessage(game)
-        )).collect(Collectors.toList());
+
+        // Added robust mapping to prevent crashes from bad data
+        return games.stream().map(game -> {
+            if (game.getDeveloper() == null) {
+                logger.warn("Game with ID {} has a null developer reference. Skipping.", game.getId());
+                return null;
+            }
+            return new GameResponse(
+                    game.getId(),
+                    game.getName(),
+                    game.getDescription(),
+                    game.getRequirements(),
+                    game.getPreviewImageUrl(),
+                    game.getApkFileUrl(),
+                    game.isSupportLeaderboard(),
+                    game.isSupportPoints(),
+                    game.getStatus(),
+                    game.getDeveloper().getId(),
+                    generateApiKeyMessage(game)
+            );
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public List<GameResponse> getPublicGames() {
@@ -153,8 +155,32 @@ public class GameService {
                 game.isSupportPoints(),
                 game.getStatus(),
                 game.getDeveloper().getId(),
-                null // Không trả apiKeyMessage cho public
+                null
         )).collect(Collectors.toList());
+    }
+
+    public GameResponse getGameById(Long id) {
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new GameException("Game not found with ID: " + id));
+
+        // Use the existing mapping logic, assuming the developer association is valid
+        if (game.getDeveloper() == null) {
+            throw new GameException("Game with ID " + id + " has a null developer reference.");
+        }
+
+        return new GameResponse(
+                game.getId(),
+                game.getName(),
+                game.getDescription(),
+                game.getRequirements(),
+                game.getPreviewImageUrl(),
+                game.getApkFileUrl(),
+                game.isSupportLeaderboard(),
+                game.isSupportPoints(),
+                game.getStatus(),
+                game.getDeveloper().getId(),
+                generateApiKeyMessage(game)
+        );
     }
 
     private String saveFile(MultipartFile file, String prefix) throws GameException {
@@ -164,7 +190,6 @@ public class GameService {
         }
 
         try {
-            // Tạo thư mục uploads/ nếu chưa tồn tại
             File uploadDir = new File(UPLOAD_DIR);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
