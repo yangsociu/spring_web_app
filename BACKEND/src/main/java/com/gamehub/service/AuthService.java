@@ -79,7 +79,8 @@ public class AuthService {
                 registerRequest.getFullName(),
                 registerRequest.getPortfolioUrl(),
                 registerRequest.getExperienceYears(),
-                (role == UserRole.DESIGNER || role == UserRole.DEVELOPER) ? UserStatus.PENDING : UserStatus.APPROVED
+                (role == UserRole.DESIGNER || role == UserRole.DEVELOPER) ? UserStatus.PENDING : UserStatus.APPROVED,
+                0L
         );
 
         logger.debug("Saving user: {}", user.getEmail());
