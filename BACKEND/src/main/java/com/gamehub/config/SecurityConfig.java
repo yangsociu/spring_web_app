@@ -42,7 +42,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/games/public", "/api/v1/games/*").permitAll()
+                        .requestMatchers("/api/v1/auth/register",
+                                "/api/v1/auth/login", "/api/v1/games/public", "/api/v1/games/*").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/games/**").hasAuthority("DEVELOPER")
                         .anyRequest().authenticated()

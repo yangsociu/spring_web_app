@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface GameRepository extends JpaRepository<Game, Long> {
     List<Game> findByStatus(GameStatus status);
     List<Game> findByDeveloperId(Long developerId);
+
 }
