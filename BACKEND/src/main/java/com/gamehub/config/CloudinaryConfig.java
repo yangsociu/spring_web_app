@@ -1,3 +1,4 @@
+// Cấu hình và khởi tạo đối tượng Cloudinary để quản lý tài nguyên media trên nền tảng Cloudinary.
 package com.gamehub.config;
 
 import com.cloudinary.Cloudinary;

@@ -1,3 +1,6 @@
+// Component giao diện chính của bảng điều khiển admin, 
+// cung cấp các tab để quản lý phê duyệt người dùng, phê duyệt trò chơi và xem danh sách đã được phê duyệt.
+
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

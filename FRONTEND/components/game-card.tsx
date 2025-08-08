@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
-Card,
-CardContent,
-CardFooter,
+  Card,
+  CardContent,
+  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Game } from "@/lib/types";
@@ -15,60 +15,54 @@ interface GameCardProps {
   showStatus?: boolean;
 }
 
-
 export function GameCard({ game, showStatus = false }: GameCardProps) {
   const getStatusClasses = (status: Game["status"]) => {
     switch (status) {
       case "APPROVED":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-green-100 text-green-700 border-green-200";
       case "PENDING":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "REJECTED":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-red-100 text-red-700 border-red-200";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
-  // UPDATED: Use the full URL directly, with a fallback.
   const imageUrl = game.previewImageUrl || "/stylized-game-scene.png";
 
   return (
     <motion.div
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -8, scale: 1.03 }}
+      transition={{ duration: 0.3 }}
       className="h-full"
     >
       <Link href={`/games/${game.id}`} className="block h-full">
-        <Card className="flex flex-col h-full bg-gray-900 border-gray-800 hover:border-primary transition-colors duration-300 overflow-hidden">
+        <Card className="flex flex-col h-full bg-white border border-gray-200 hover:border-blue-400 transition-all duration-300 overflow-hidden rounded-xl shadow-md hover:shadow-xl">
           <div className="relative aspect-video w-full">
             <Image
-              src={imageUrl || "/placeholder.svg"}
+              src={imageUrl}
               alt={`Preview for ${game.name}`}
               fill
-              className="object-cover"
+              className="object-cover rounded-t-xl"
             />
           </div>
           <CardContent className="p-4 flex-1">
-            <h3 className="font-bold text-lg text-white">{game.name}</h3>
-            <p className="mt-1 text-sm text-gray-400 line-clamp-2">
+            <h3 className="font-bold text-lg text-gray-800">{game.name}</h3>
+            <p className="mt-1 text-sm text-gray-600 line-clamp-2">
               {game.description}
             </p>
           </CardContent>
           <CardFooter className="p-4 pt-0">
             {showStatus ? (
               <div className="w-full">
-                <Badge className={cn("w-full justify-center", getStatusClasses(game.status))}>
+                <Badge className={cn("w-full justify-center font-semibold", getStatusClasses(game.status))}>
                   {game.status}
                 </Badge>
-                {game.apiKeyMessage && game.status === 'APPROVED' && (
-                  <p className="text-xs text-center text-muted-foreground bg-gray-800 p-2 rounded-md mt-2">
-                    {game.apiKeyMessage}
-                  </p>
-                )}
+              
               </div>
             ) : (
-              <div className="text-sm text-primary font-semibold">
+              <div className="text-sm text-blue-600 font-semibold hover:text-blue-800 transition-colors">
                 View Details &rarr;
               </div>
             )}

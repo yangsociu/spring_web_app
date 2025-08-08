@@ -1,3 +1,5 @@
+// Component giao diện chính của bảng điều khiển dành cho player
+
 export default function PlayerDashboardPage() {
 return (
   <div className="container mx-auto px-4 py-8">

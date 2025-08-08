@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/header";
 import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "GameHub - Your World of Games",
-  description: "Discover, review, and share your favorite games.",
-    generator: 'v0.dev'
+  title: "GameAssetHub - Your Marketplace for Game Assets",
+  description: "Discover, buy, and share game assets like sprites and music for your next project.",
+  generator: 'v0.dev'
 };
 
 export default function RootLayout({
@@ -19,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-gray-950 text-gray-50`}>
+    <html lang="en">
+      <body className="bg-gradient-to-b from-blue-50 to-white text-gray-800 font-poppins">
         <AuthProvider>
           <div className="relative flex min-h-screen w-full flex-col">
             <Header />

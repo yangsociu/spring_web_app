@@ -1,3 +1,5 @@
+// Dịch vụ xử lý tải tệp lên Cloudinary và trả về URL của tệp đã tải,
+// xử lý lỗi nếu tệp rỗng hoặc tải lên thất bại.
 package com.gamehub.service;
 
 import com.cloudinary.Cloudinary;

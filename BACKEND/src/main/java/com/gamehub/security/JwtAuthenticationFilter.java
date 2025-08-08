@@ -1,3 +1,5 @@
+// Lọc yêu cầu HTTP để xác thực và ủy quyền người dùng bằng JWT,
+// bỏ qua một số đường dẫn cụ thể như đăng ký và đăng nhập.
 package com.gamehub.security;
 
 import jakarta.servlet.FilterChain;
