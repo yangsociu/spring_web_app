@@ -1,5 +1,4 @@
 // Note: Cấu hình bảo mật với Spring Security, bật CORS và JWT authentication.
-// Cho phép truy cập công khai vào /api/v1/auth/register và /api/v1/auth/login.
 package com.gamehub.config;
 
 import com.gamehub.security.JwtAuthenticationFilter;

@@ -1,3 +1,4 @@
+// Component giao diện chính của bảng điều khiển dành cho designer
 export default function DesignerDashboardPage() {
 return (
   <div className="container mx-auto px-4 py-8">
