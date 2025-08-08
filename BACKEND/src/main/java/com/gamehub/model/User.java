@@ -54,10 +54,13 @@ public class User {
     @Column(nullable = false)
     private UserStatus status;
 
+    @Column(name = "total_points", nullable = false)
+    private Long totalPoints = 0L; // Note: Thêm trường totalPoints
+
     public User() {}
 
     public User(String email, String password, UserRole role
-            , String fullName, String portfolioUrl, Integer experienceYears, UserStatus status) {
+            , String fullName, String portfolioUrl, Integer experienceYears, UserStatus status, Long totalPoints) {
         this.email = email;
         this.password = password;
         this.role = role;
@@ -65,6 +68,7 @@ public class User {
         this.portfolioUrl = portfolioUrl;
         this.experienceYears = experienceYears;
         this.status = status;
+        this.totalPoints = totalPoints;
     }
 
     // Getters and Setters remain the same...
@@ -138,5 +142,13 @@ public class User {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public Long getTotalPoints() {
+        return totalPoints;
+    }
+
+    public void setTotalPoints(Long totalPoints) {
+        this.totalPoints = totalPoints;
     }
 }

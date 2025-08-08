@@ -42,10 +42,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/auth/register",
-                                "/api/v1/auth/login", "/api/v1/games/public", "/api/v1/games/*").permitAll()
+                        // Cho phép tất cả truy cập các endpoint công khai
+                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/games/public", "/api/v1/games/{id}", "/api/v1/reviews/{gameId}", "/api/v1/leaderboard").permitAll()
+                        // Endpoint cho ADMIN
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
+                        // Endpoint cho DEVELOPER
                         .requestMatchers("/api/v1/games/**").hasAuthority("DEVELOPER")
+                        // Endpoint cho PLAYER
+                        .requestMatchers("/api/v1/games/**", "/api/v1/reviews", "/api/v1/points/**").hasAuthority("PLAYER")
+                        // Tất cả các request khác yêu cầu xác thực
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
