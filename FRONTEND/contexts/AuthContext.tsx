@@ -1,81 +1,99 @@
-"use client";
+"use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { loginUser } from "@/lib/api";
-import type { LoginRequest, AuthResponse } from "@/lib/types";
+import type React from "react"
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  totalPoints?: number;
-}
+import { createContext, useContext, useEffect, useState } from "react"
+import { loginUser, registerUser, getCurrentUser } from "@/lib/api"
+import type { LoginRequest, RegisterRequest, AuthResponse, User } from "@/lib/types"
 
 interface AuthContextType {
-  user: AuthResponse | null;
-  loading: boolean;
-  token: string | null;
-  login: (email: string, password: string) => Promise<AuthResponse>;
-  logout: () => void;
+  user: User | null
+  login: (data: LoginRequest) => Promise<AuthResponse>
+  register: (data: RegisterRequest) => Promise<AuthResponse>
+  logout: () => void
+  loading: boolean
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthResponse | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token");
-      if (storedUser && storedToken) {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
+    // Check if user is logged in on mount
+    const checkAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (currentUser) {
+          // Fetch full user details if we have basic auth info
+          const userStr = localStorage.getItem("user")
+          if (userStr) {
+            const authResponse: AuthResponse = JSON.parse(userStr)
+            setUser({
+              id: authResponse.id || authResponse.userId || 0,
+              email: authResponse.email,
+              role: authResponse.role as any,
+              status: "APPROVED", // Assuming logged in users are approved
+              fullName: currentUser.fullName, // This would come from a full user details API call
+            })
+          }
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-    } finally {
-      setLoading(false);
     }
-  }, []);
 
-  const login = async (email: string, password: string) => {
-    try {
-      const data = await loginUser({ email, password });
-      setUser(data);
-      setToken(data.token);
-      localStorage.setItem("user", JSON.stringify(data));
-      localStorage.setItem("token", data.token);
-      return data;
-    } catch (error) {
-      // Re-throw the error to be handled by the calling component
-      throw error;
-    }
-  };
+    checkAuth()
+  }, [])
+
+  const login = async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await loginUser(data)
+    localStorage.setItem("user", JSON.stringify(response))
+
+    // Set user state with available information
+    setUser({
+      id: response.id || response.userId || 0,
+      email: response.email,
+      role: response.role as any,
+      status: "APPROVED", // Assuming logged in users are approved
+    })
+
+    return response
+  }
+
+  const register = async (data: RegisterRequest): Promise<AuthResponse> => {
+    const response = await registerUser(data)
+    localStorage.setItem("user", JSON.stringify(response))
+
+    // Set user state with available information
+    setUser({
+      id: response.id || response.userId || 0,
+      email: response.email,
+      role: response.role as any,
+      status: "PENDING", // New registrations are typically pending
+      fullName: data.fullName,
+      portfolioUrl: data.portfolioUrl,
+      experienceYears: data.experienceYears,
+    })
+
+    return response
+  }
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    // Redirect to home or login page
-    window.location.href = '/login';
-  };
+    localStorage.removeItem("user")
+    setUser(null)
+  }
 
-  const value = { user, loading, token, login, logout };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, register, logout, loading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider")
   }
-  return context;
+  return context
 }

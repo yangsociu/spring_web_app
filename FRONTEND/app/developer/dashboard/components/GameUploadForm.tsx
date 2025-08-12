@@ -1,151 +1,173 @@
-// Component biểu mẫu để tải lên trò chơi mới, cho phép nhập thông tin trò chơi, 
-// tải lên hình ảnh xem trước, cung cấp liên kết tải xuống APK, và gửi dữ liệu để phê duyệt, 
-// với thông báo kết quả và xử lý lỗi.
+"use client"
 
-"use client";
+import type React from "react"
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/components/ui/use-toast";
-import { createGame } from "@/lib/api";
-import { Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from "react"
+import { createGame } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/hooks/use-toast"
+import { Upload } from "lucide-react"
 
-type FormData = {
-  name: string;
-  description: string;
-  requirements: string;
-  previewImage: FileList;
-  apkFileUrl: string;
-  supportLeaderboard: boolean;
-  supportPoints: boolean;
-};
+export function GameUploadForm({ onGameCreated }: { onGameCreated?: () => void }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    requirements: "",
+    apkFileUrl: "",
+    supportLeaderboard: false,
+    supportPoints: false,
+  })
+  const [previewImage, setPreviewImage] = useState<File | null>(null)
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
 
-export function GameUploadForm() {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  const onSubmit = async (data: FormData) => {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("description", data.description);
-    formData.append("requirements", data.requirements);
-    formData.append("previewImage", data.previewImage[0]);
-    formData.append("apkFileUrl", data.apkFileUrl);
-    formData.append("supportLeaderboard", String(data.supportLeaderboard));
-    formData.append("supportPoints", String(data.supportPoints));
-
-    try {
-      await createGame(formData);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!previewImage) {
       toast({
-        title: "Game Submitted!",
-        description: "Your game has been submitted for approval.",
-      });
-      reset();
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a preview image.",
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const data = new FormData()
+      data.append("name", formData.name)
+      data.append("description", formData.description)
+      data.append("requirements", formData.requirements)
+      data.append("apkFileUrl", formData.apkFileUrl)
+      data.append("supportLeaderboard", formData.supportLeaderboard.toString())
+      data.append("supportPoints", formData.supportPoints.toString())
+      data.append("previewImage", previewImage)
+
+      await createGame(data)
+
+      toast({
+        title: "Success",
+        description: "Game uploaded successfully! Waiting for admin approval.",
+      })
+
+      // Reset form
+      setFormData({
+        name: "",
+        description: "",
+        requirements: "",
+        apkFileUrl: "",
+        supportLeaderboard: false,
+        supportPoints: false,
+      })
+      setPreviewImage(null)
+
+      if (onGameCreated) {
+        onGameCreated()
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Submission Failed",
-        description: error.message || "An unexpected error occurred.",
-      });
+        title: "Error",
+        description: error.message || "Failed to upload game.",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="p-6 bg-gradient-to-b from-blue-50 to-white">
-      <Card className="mx-auto max-w-2xl w-full bg-white border-gray-200 shadow-lg rounded-xl">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-3xl font-bold text-gray-800">Upload New Game</CardTitle>
-          <CardDescription className="text-gray-600 text-base mt-1">
-            Submit your game details for approval
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-gray-800 text-sm font-semibold">Game Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter game name"
-                {...register("name", { required: "Game name is required" })}
-                className="border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 rounded-lg h-11 focus:ring-2 focus:ring-blue-600 transition-all duration-200"
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          Upload New Game
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Game Name *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="requirements">System Requirements</Label>
+            <Textarea
+              id="requirements"
+              value={formData.requirements}
+              onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+              rows={2}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="previewImage">Preview Image *</Label>
+            <Input
+              id="previewImage"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPreviewImage(e.target.files?.[0] || null)}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="apkFileUrl">APK Download URL *</Label>
+            <Input
+              id="apkFileUrl"
+              type="url"
+              value={formData.apkFileUrl}
+              onChange={(e) => setFormData({ ...formData, apkFileUrl: e.target.value })}
+              placeholder="https://example.com/game.apk"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="supportLeaderboard"
+                checked={formData.supportLeaderboard}
+                onCheckedChange={(checked) => setFormData({ ...formData, supportLeaderboard: checked as boolean })}
               />
-              {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+              <Label htmlFor="supportLeaderboard">Support Leaderboard</Label>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description" className="text-gray-800 text-sm font-semibold">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe your game"
-                {...register("description", { required: "Description is required" })}
-                className="border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 rounded-lg"
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="supportPoints"
+                checked={formData.supportPoints}
+                onCheckedChange={(checked) => setFormData({ ...formData, supportPoints: checked as boolean })}
               />
-              {errors.description && <p className="text-sm text-red-600">{errors.description.message}</p>}
+              <Label htmlFor="supportPoints">Support Points System</Label>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="requirements" className="text-gray-800 text-sm font-semibold">System Requirements</Label>
-              <Textarea
-                id="requirements"
-                placeholder="Specify system requirements"
-                {...register("requirements", { required: "System requirements are required" })}
-                className="border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 rounded-lg"
-              />
-              {errors.requirements && <p className="text-sm text-red-600">{errors.requirements.message}</p>}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="previewImage" className="text-gray-800 text-sm font-semibold">Preview Image (PNG, JPG)</Label>
-                <Input
-                  id="previewImage"
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  {...register("previewImage", { required: "Preview image is required" })}
-                  className="border-gray-200 bg-white text-gray-800 rounded-lg h-11 focus:ring-2 focus:ring-blue-600 transition-all duration-200"
-                />
-                {errors.previewImage && <p className="text-sm text-red-600">{errors.previewImage.message}</p>}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="apkFileUrl" className="text-gray-800 text-sm font-semibold">Game Download Link</Label>
-                <Input
-                  id="apkFileUrl"
-                  type="url"
-                  placeholder="https://example.com/game.apk"
-                  {...register("apkFileUrl", { required: "Download link is required" })}
-                  className="border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 rounded-lg h-11 focus:ring-2 focus:ring-blue-600 transition-all duration-200"
-                />
-                {errors.apkFileUrl && <p className="text-sm text-red-600">{errors.apkFileUrl.message}</p>}
-              </div>
-            </div>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="supportLeaderboard" {...register("supportLeaderboard")} />
-                <Label htmlFor="supportLeaderboard" className="text-gray-800 text-sm font-semibold">Support Leaderboard</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="supportPoints" {...register("supportPoints")} />
-                <Label htmlFor="supportPoints" className="text-gray-800 text-sm font-semibold">Support Points</Label>
-              </div>
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-11 font-semibold shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit for Approval
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? "Uploading..." : "Upload Game"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
 }

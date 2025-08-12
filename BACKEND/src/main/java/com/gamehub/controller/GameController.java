@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.servlet.view.RedirectView;
+
 import java.util.List;
 
 @RestController
@@ -30,6 +32,25 @@ public class GameController {
         logger.info("Game creation request by user: {}", authentication.getName());
         GameResponse response = gameService.createGame(gameRequest, authentication.getName());
         return ResponseEntity.ok(response);
+    }
+
+    //Phương thức update games
+    @PutMapping("/{id}")
+    public ResponseEntity<GameResponse> updateGame(@PathVariable Long id,
+                                                   @Valid @ModelAttribute GameRequest gameRequest,
+                                                   Authentication authentication) throws GameException {
+        logger.info("Game update request for ID: {} by user: {}", id, authentication.getName());
+        GameResponse response = gameService.updateGame(id, gameRequest, authentication.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    //Phương thức delete games
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteGame(@PathVariable Long id,
+                                             Authentication authentication) throws GameException {
+        logger.info("Game deletion request for ID: {} by user: {}", id, authentication.getName());
+        gameService.deleteGame(id, authentication.getName());
+        return ResponseEntity.ok("Game deleted successfully");
     }
 
     @GetMapping("/my-games")
