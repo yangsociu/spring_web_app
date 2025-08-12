@@ -1,5 +1,5 @@
 // Note: DTO trả về thông tin quà tặng cho client, thêm quantity.
-// Source: Cập nhật file GiftDTO.java hiện có
+// Source: Cập nhật file GiftDTO.java hiện có.
 package com.gamehub.dto;
 
 public class GiftDTO {

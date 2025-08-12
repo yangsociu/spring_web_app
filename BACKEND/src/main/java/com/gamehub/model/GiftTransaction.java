@@ -1,5 +1,5 @@
 // Note: Entity đại diện cho bảng gift_transactions trong MySQL.
-// Source: File mới
+// Source: File mới.
 package com.gamehub.model;
 
 import jakarta.persistence.*;
