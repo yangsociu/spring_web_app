@@ -1,5 +1,5 @@
 // Note: Entity đại diện cho bảng gifts trong MySQL, thêm trường quantity.
-// Source: Cập nhật file Gift.java hiện có.
+// Source: Cập nhật file Gift.java hiện có
 package com.gamehub.model;
 
 import jakarta.persistence.*;

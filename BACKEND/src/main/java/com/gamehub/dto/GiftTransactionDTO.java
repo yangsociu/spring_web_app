@@ -1,5 +1,5 @@
 // Note: DTO trả về thông tin giao dịch đổi quà cho client.
-// Source: File mới.
+// Source: File mới
 package com.gamehub.dto;
 
 public class GiftTransactionDTO {

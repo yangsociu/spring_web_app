@@ -1,5 +1,5 @@
 // Note: Controller xử lý các request liên quan đến quà tặng (upload, hiển thị, đổi quà), thêm quantity.
-// Source: Cập nhật file GiftController.java hiện có.
+// Source: Cập nhật file GiftController.java hiện có
 package com.gamehub.controller;
 
 import com.gamehub.dto.GiftDTO;

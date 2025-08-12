@@ -1,5 +1,5 @@
 // Note: Xử lý logic liên quan đến quà tặng và đổi quà, thêm kiểm tra và cập nhật quantity.
-// Source: Cập nhật file GiftService.java hiện có.
+// Source: Cập nhật file GiftService.java hiện có
 package com.gamehub.service;
 
 import com.gamehub.dto.GiftDTO;
