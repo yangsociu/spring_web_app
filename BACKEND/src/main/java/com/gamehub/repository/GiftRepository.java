@@ -1,5 +1,5 @@
 // Note: Repository để truy vấn bảng gifts trong MySQL.
-// Source: File mới
+// Source: File mới.
 package com.gamehub.repository;
 
 import com.gamehub.model.Gift;
