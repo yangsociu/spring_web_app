@@ -49,14 +49,24 @@ export function ImageCropper({ isOpen, onClose, onCrop, imageFile, aspectRatio =
   }, [])
 
   const handleCrop = useCallback(async () => {
-    if (!imageFile || !canvasRef.current || !imageRef.current) return
+    if (!imageFile || !canvasRef.current || !imageRef.current || !containerRef.current) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
     const img = imageRef.current
-    const cropSize = 300 // Final crop size
+    const cropPreviewSize = 200 // Kích thước khung crop trong preview
+    const cropSize = 300 // Kích thước output cuối
+    const scaleFactor = cropSize / cropPreviewSize
+
+    const containerW = containerRef.current.clientWidth
+    const containerH = containerRef.current.clientHeight
+    const naturalW = img.naturalWidth
+    const naturalH = img.naturalHeight
+    const fitScale = Math.min(containerW / naturalW, containerH / naturalH)
+    const fitW = naturalW * fitScale
+    const fitH = naturalH * fitScale
 
     canvas.width = cropSize
     canvas.height = cropSize
@@ -67,15 +77,12 @@ export function ImageCropper({ isOpen, onClose, onCrop, imageFile, aspectRatio =
     // Save context
     ctx.save()
 
-    // Move to center for rotation
-    ctx.translate(cropSize / 2, cropSize / 2)
-    ctx.rotate((rotation * Math.PI) / 180)
+    ctx.scale(scaleFactor, scaleFactor)
+    ctx.translate(cropPreviewSize / 2, cropPreviewSize / 2)
+    ctx.translate(position.x, position.y)
     ctx.scale(scale, scale)
-
-    // Draw image centered
-    const drawWidth = img.naturalWidth
-    const drawHeight = img.naturalHeight
-    ctx.drawImage(img, -drawWidth / 2 + position.x / scale, -drawHeight / 2 + position.y / scale, drawWidth, drawHeight)
+    ctx.rotate((rotation * Math.PI) / 180)
+    ctx.drawImage(img, -fitW / 2, -fitH / 2, fitW, fitH)
 
     // Restore context
     ctx.restore()
